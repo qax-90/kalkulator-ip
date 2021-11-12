@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { PrimaryNetworkParams } from './PrimaryNetworkParams';
+import { PrimaryNetworkParamsPartTwo } from './PrimaryNetworkParamsPartTwo';
 import { Subnetting } from './Subnetting';
 import { Settings } from './Settings';
 
@@ -97,9 +98,6 @@ export default class App extends Component {
     let hostMaxAddressDecimal = hostMaxAddressDecimalOctets.join('.');
     this.setState({ ipAddress: {decimal: ipAddressDecimal, binary: ipAddressBinary}, networkMask: {number: parseInt(networkMask), decimal: networkMaskDecimal, binary: networkMaskBinary}, networkAddress: {decimal: networkAddressDecimal, binary: networkAddressBinary}, broadcastAddress: {decimal: broadcastAddressDecimal, binary: broadcastAddressBinary}, hostsNumber: {number: (parseInt(networkMask) < 32) ? Math.floor(Math.pow(2, 32 - parseInt(networkMask)) - 2) : 0, binary: (parseInt(networkMask) < 32) ? (Math.floor(Math.pow(2, 32 - parseInt(networkMask)) - 2) >>> 0).toString(2) : ''}, hostMinAddress: {decimal: hostMinAddressDecimal, binary: hostMinAddressBinary}, hostMaxAddress: {decimal: hostMaxAddressDecimal, binary: hostMaxAddressBinary} });
   }
-  computeSubnetting = () => {
-alert('ok');
-  }
   render() {
     return (
       <div className="container-lg">
@@ -113,15 +111,17 @@ alert('ok');
             <div className="col-lg-8">
               <h4 className="mb-3 text-primary">Podstawowe parametry sieci</h4>
               <PrimaryNetworkParams
+              networkMaskNumber={this.state.networkMask.number}
               ipAddressDecimal={this.state.ipAddress.decimal}
               ipAddressBinary={this.state.ipAddress.binary}
-              networkMaskNumber={this.state.networkMask.number}
               networkMaskDecimal={this.state.networkMask.decimal}
               networkMaskBinary={this.state.networkMask.binary}
               networkAddressDecimal={this.state.networkAddress.decimal}
               networkAddressBinary={this.state.networkAddress.binary}
               broadcastAddressDecimal={this.state.broadcastAddress.decimal}
-              broadcastAddressBinary={this.state.broadcastAddress.binary}
+              broadcastAddressBinary={this.state.broadcastAddress.binary} />
+              <PrimaryNetworkParamsPartTwo
+              networkMaskNumber={this.state.networkMask.number}
               hostsNumberNumber={this.state.hostsNumber.number}
               hostsNumberBinary={this.state.hostsNumber.binary}
               hostMinAddressDecimal={this.state.hostMinAddress.decimal}
@@ -143,5 +143,5 @@ alert('ok');
         </main>
       </div>
     )
-  };
+  }
 }

@@ -4,27 +4,21 @@ export class Subnetting extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      subnets: [
-        {id: '0',
-        subnetsAmount: '1',
-        hostsAmount: '254',
-        list: [
-          {id: '0',
-          subnetAddress:
-            {decimal: '5.206.252.0',
-            binary: '11010010.11111010.00100110.00011101'},
+      subnets: [{
+        id: '',
+        subnetsAmount: '',
+        hostsAmount: '',
+        list: [{
+          id: '',
+          subnetAddress: {
+            decimal: '',
+            binary: ''
+          },
           subnetMask: {
-            number: '24',
-            decimal: '5.206.252.0',
-            binary: '11010010.11111010.00100110.00011101'}},
-          {id: '1',
-          subnetAddress:
-            {decimal: '8.26.62.90',
-            binary: '11010010.11111010.00100110.00011101'},
-          subnetMask: {
-            number: '25',
-            decimal: '5.206.252.0',
-            binary: '11010010.11111010.00100110.00011101'}}
+            number: '',
+            decimal: '',
+            binary: ''
+          }}
         ]}
       ]
     };
@@ -37,9 +31,9 @@ export class Subnetting extends Component {
       let ipAddressBinaryOctets = ipAddressBinary.split('.');
       let ipAddressBinaryText = ipAddressBinaryOctets.join('');
       let ipAddressFirstPartBinaryText = ipAddressBinaryText.substring(0, parseInt(networkMaskNumber));
-      let subnetAddressBinaryText;
+      let subnetAddressBinaryText, subnetMaskBinaryText;
       let subnetsAmount, hostsAmount;
-      let subnetAddressBinaryOctets, subnetAddressDecimalOctets, subnetAddressBinary, subnetAddressDecimal;
+      let subnetAddressBinaryOctets, subnetAddressDecimalOctets, subnetAddressBinary, subnetAddressDecimal, subnetMaskBinaryOctets, subnetMaskDecimalOctets, subnetMaskBinary, subnetMaskDecimal;
       for (let loop = networkMaskNumber; loop <= 30; loop++) {
         for (let loop2 = networkMaskNumber; loop2 <= loop; loop2++) {
           subnetAddressBinaryText = '';
@@ -49,15 +43,24 @@ export class Subnetting extends Component {
           subnetAddressDecimalOctets = subnetAddressBinaryOctets.map(octet => parseInt(octet, 2));
           subnetAddressBinary = subnetAddressBinaryOctets.join('.');
           subnetAddressDecimal = subnetAddressDecimalOctets.join('.');
+          subnetMaskBinaryText = '';
+          subnetMaskBinaryText = subnetMaskBinaryText.padEnd(loop2, '1');
+          subnetMaskBinaryText = subnetMaskBinaryText.padEnd(32, '0');
+          subnetMaskBinaryOctets = [subnetMaskBinaryText.substring(0, 8), subnetMaskBinaryText.substring(8, 16), subnetMaskBinaryText.substring(16, 24), subnetMaskBinaryText.substring(24)];
+          subnetMaskDecimalOctets = subnetMaskBinaryOctets.map(octet => parseInt(octet, 2));
+          subnetMaskBinary = subnetMaskBinaryOctets.join('.');
+          subnetMaskDecimal = subnetMaskDecimalOctets.join('.');
           subnetsListObject = {
             id: loop + '.' + loop2,
-            subnetAddress:
-              {decimal: subnetAddressDecimal,
-              binary: subnetAddressBinary},
+            subnetAddress: {
+              decimal: subnetAddressDecimal,
+              binary: subnetAddressBinary
+            },
             subnetMask: {
               number: loop2,
-              decimal: '0.0.0.0',
-              binary: '00000000.00000000.00000000.00000000'}
+              decimal: subnetMaskDecimal,
+              binary: subnetMaskBinary
+            }
           };
           subnetsListArray.push(subnetsListObject);
         }
@@ -82,18 +85,18 @@ export class Subnetting extends Component {
       this.state.subnets.map(item =>
         <div key={item.id} className="row pb-4 gy-2 d-flex">
           <div className="col-sm-3 col-md-2">
-            <h5>{(item.subnetsAmount > 1) ? item.subnetsAmount + ' podsieci' : item.subnetsAmount + ' podsieć'}</h5>
+            <h5>{(item.subnetsAmount !== 1) ? item.subnetsAmount + ' podsieci' : item.subnetsAmount + ' podsieć'}</h5>
           </div>
           <div className="col-sm-6 col-md-7">
-            <div><span className="text-info">1</span>&nbsp;podsieć z&nbsp;<span className="text-info">253</span> adresami IP możliwymi do wykorzystania z&nbsp;<span className="text-info">255</span> dostępnych (wykorzystanie <span className="text-info">95,94%</span>)</div>
-            <div><span className="text-info">0</span>&nbsp;podsieci efektywnych z&nbsp;<span className="text-info">253</span> adresami IP możliwymi do wykorzystania z&nbsp;<span className="text-info">255</span> dostępnych (wykorzystanie <span className="text-info">95,94%</span>)</div>
+            <div><span className="text-info">{item.subnetsAmount}</span>&nbsp;{(item.subnetsAmount !== 1) ? 'podsieci' : 'podsieć'} &ndash; każda z&nbsp;<span className="text-info">{item.hostsAmount * item.subnetsAmount}</span> adresami IP możliwymi do wykorzystania z&nbsp;<span className="text-info">{(item.hostsAmount + 2) * item.subnetsAmount}</span> dostępnych (wykorzystanie <span className="text-danger">{(item.subnetsAmount > 0) ? (Math.floor(item.hostsAmount / (item.hostsAmount + 2) * 100000) / 1000).toString().replace('.', ',') + '%' : 'niemożliwe'}</span>)</div>
+            <div><span className="text-info">{(item.subnetsAmount >= 2) ? (item.subnetsAmount - 2) : '0'}</span>&nbsp;{((item.subnetsAmount - 2) !== 1) ? 'podsieci efektywnych' : 'podsieć efektywna'} &ndash; każda z&nbsp;<span className="text-info">{(item.subnetsAmount > 2) ? item.hostsAmount * (item.subnetsAmount - 2) : '0'}</span> adresami IP możliwymi do wykorzystania z&nbsp;<span className="text-info">{(item.hostsAmount + 2) * item.subnetsAmount}</span> dostępnych (wykorzystanie <span className="text-danger">{(item.subnetsAmount > 2) ? (Math.floor((item.hostsAmount * (item.subnetsAmount - 2)) / ((item.hostsAmount + 2) * item.subnetsAmount) * 100000) / 1000).toString().replace('.', ',') + '%' : 'niemożliwe'}</span>)</div>
             <div><span className="text-info">{item.hostsAmount}</span>&nbsp;hostów możliwych do wykorzystania w każdej z&nbsp;podsieci</div>
           </div>
           <div className="col-sm-3 col-md-3">
             <div>Lista podsieci:</div>
             {item.list.map(subitem => {
               return (
-                <div key={subitem.id}>{subitem.subnetAddress.decimal} / {subitem.subnetMask.number}</div>
+                <div key={subitem.id} title={'Adres sieci dziesiętnie: ' + subitem.subnetAddress.decimal + '\r\nAdres sieci binarnie: ' + subitem.subnetAddress.binary + '\r\nMaska sieciowa skrótowo: /' + subitem.subnetMask.number + '\r\nMaska sieciowa dziesiętnie: ' + subitem.subnetMask.decimal + '\r\nMaska sieciowa binarnie: ' + subitem.subnetMask.binary}>{subitem.subnetAddress.decimal} / {subitem.subnetMask.number}</div>
               )
             })}
           </div>

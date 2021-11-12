@@ -17,16 +17,16 @@ export class Settings extends Component {
     this.getTodos();
   }
   async getTodos() {
-    let data = await axios.get('https://api.ipify.org').then(function(response) {
-      return response;
+    var ipAddressDecimal;
+    await axios.get('https://api.ipify.org').then(function(response) {
+      ipAddressDecimal = response.data;
     }).catch(function(error) {
-      console.log(error);
+      ipAddressDecimal = '0.0.0.0';
     });
-    let ipAddressDecimal = data.data;
     let ipAddressDecimalOctets = ipAddressDecimal.split('.');
     let ipAddressBinaryOctets = ipAddressDecimalOctets.map(octet => (octet >>> 0).toString(2).padStart(8, '0'));
     let ipAddressBinary = ipAddressBinaryOctets.join('.');
-    this.setState({ ipAddressDefault: {decimal: ipAddressDecimal, binary: ipAddressBinary}, networkMaskDefault: {number: 24}, ipAddressInput: {decimal: ipAddressDecimal, binary: ipAddressBinary}, networkMaskSelect: {number: 24} });
+    this.setState({ ipAddressDefault: {decimal: ipAddressDecimal, binary: ipAddressBinary}, networkMaskDefault: {number: 24}, ipAddressInput: {decimal: ipAddressDecimal, binary: ipAddressBinary}, networkMaskSelect: {number: '24'} });
     this.computePrimaryNetworkParams(ipAddressDecimalOctets, ipAddressBinaryOctets, 24);
   }
   restoreOwnIp = () => {
@@ -76,15 +76,7 @@ export class Settings extends Component {
   updateSettings = (ipAddressType, ipAddress, networkMask) => {
     let ipAddressDecimalOctets = [], ipAddressBinaryOctets = [], ipAddressDecimalOctetsInput = [], ipAddressBinaryOctetsInput = [];
     let decimalOctets = [], ipAddressDecimalInput, ipAddressBinaryInput;
-    let ipInfoClassName, ipInfoText;
     if (ipAddressType === 'ip-address-decimal') {
-      if (ipAddress === this.state.ipAddressDefault.decimal) {
-        ipInfoClassName = 'badge rounded-pill bg-success';
-        ipInfoText = 'Twój adres IP';
-      } else {
-        ipInfoClassName = 'badge rounded-pill bg-warning';
-        ipInfoText = 'Obcy adres IP';
-      }
       ipAddressDecimalOctetsInput = ipAddress.split('.');
       decimalOctets[0] = ((typeof ipAddressDecimalOctetsInput[0] !== 'undefined' && !isNaN(ipAddressDecimalOctetsInput[0]) && parseInt(ipAddressDecimalOctetsInput[0]) >= 0 && parseInt(ipAddressDecimalOctetsInput[0]) <= 255) ? Number(ipAddressDecimalOctetsInput[0]) : 0);
       decimalOctets[1] = ((typeof ipAddressDecimalOctetsInput[1] !== 'undefined' && !isNaN(ipAddressDecimalOctetsInput[1]) && parseInt(ipAddressDecimalOctetsInput[1]) >= 0 && parseInt(ipAddressDecimalOctetsInput[1]) <= 255) ? Number(ipAddressDecimalOctetsInput[1]) : 0);
@@ -96,7 +88,7 @@ export class Settings extends Component {
       ipAddressBinaryOctets[3] = (decimalOctets[3] >>> 0).toString(2).padStart(8, '0');
       ipAddressDecimalOctets = ipAddressBinaryOctets.map(octet => parseInt(octet, 2));
       ipAddressBinaryInput = ipAddressBinaryOctets.join('.');
-      this.setState({ ipAddressInput: {binary: ipAddressBinaryInput}, networkMaskSelect: {number: networkMask} });
+      this.setState({ ipAddressInput: {decimal: ipAddress, binary: ipAddressBinaryInput}, networkMaskSelect: {number: networkMask} });
     } else if (ipAddressType === 'ip-address-binary') {
       ipAddressBinaryOctetsInput = ipAddress.split('.');
       decimalOctets[0] = ((typeof ipAddressBinaryOctetsInput[0] !== 'undefined' && !isNaN(ipAddressBinaryOctetsInput[0])) ? parseInt(ipAddressBinaryOctetsInput[0], 2) : 0);
@@ -109,11 +101,20 @@ export class Settings extends Component {
       ipAddressDecimalOctets[3] = ((decimalOctets[3] >= 0 && decimalOctets[3] <= 255) ? Number(decimalOctets[3]) : 0);
       ipAddressBinaryOctets = ipAddressDecimalOctets.map(octet => (octet >>> 0).toString(2).padStart(8, '0'));
       ipAddressDecimalInput = ipAddressDecimalOctets.join('.');
-      this.setState({ ipAddressInput: {decimal: ipAddressDecimalInput}, networkMaskSelect: {number: networkMask}, ownIp: {className: ipInfoClassName, text: ipInfoText} });
+      this.setState({ ipAddressInput: {decimal: ipAddressDecimalInput, binary: ipAddress}, networkMaskSelect: {number: networkMask} });
     }
     this.computePrimaryNetworkParams(ipAddressDecimalOctets, ipAddressBinaryOctets, networkMask);
   }
   computePrimaryNetworkParams = (ipAddressDecimalOctets, ipAddressBinaryOctets, networkMask) => {
+    let ipInfoClassName, ipInfoText;
+    if (ipAddressDecimalOctets.join('.') === this.state.ipAddressDefault.decimal) {
+      ipInfoClassName = 'badge rounded-pill bg-success';
+      ipInfoText = 'Twój adres IP';
+    } else {
+      ipInfoClassName = 'badge rounded-pill bg-warning';
+      ipInfoText = 'Obcy adres IP';
+    }
+    this.setState({ ownIp: {className: ipInfoClassName, text: ipInfoText} });
     this.props.callback(ipAddressDecimalOctets, ipAddressBinaryOctets, networkMask);
   }
   render() {
@@ -145,7 +146,7 @@ export class Settings extends Component {
               <div className="col-md-5 col-lg-12">
                 <div>Zapis dziesiętny:</div>
                 <div>
-                  <select className="form-control bg-secondary text-white" value={this.state.networkMaskSelect.number} onChange={e => this.updateSettings('ip-address-decimal', this.props.ipAddressDecimal, e.target.value)}>
+                  <select className="form-control bg-secondary text-white" value={this.state.networkMaskSelect.number || '24'} onChange={e => this.updateSettings('ip-address-decimal', this.props.ipAddressDecimal, e.target.value)}>
                     {this.createSelectItemsDecimal()}
                   </select>
                 </div>
@@ -153,7 +154,7 @@ export class Settings extends Component {
               <div className="col-md-7 col-lg-12">
                 <div>Zapis binarny:</div>
                 <div>
-                  <select className="form-control bg-secondary text-white" value={this.state.networkMaskSelect.number} onChange={e => this.updateSettings('ip-address-decimal', this.props.ipAddressDecimal, e.target.value)}>
+                  <select className="form-control bg-secondary text-white" value={this.state.networkMaskSelect.number || '24'} onChange={e => this.updateSettings('ip-address-decimal', this.props.ipAddressDecimal, e.target.value)}>
                     {this.createSelectItemsBinary()}
                   </select>
                 </div>
@@ -173,5 +174,5 @@ export class Settings extends Component {
         </div>
       </div>
     )
-  };
+  }
 }

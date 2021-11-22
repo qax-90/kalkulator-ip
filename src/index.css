@@ -7,7 +7,35 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+div#other-subnets.hidden {
+  display: none;
+}
+
+div#other-subnets.shown {
+  display: block;
+  z-index: 10;
+}
+
+div#other-subnets {
+  position: fixed;
+  padding: 20px;
+  width: 90vw;
+  height: 90vh;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  overflow-y: scroll;
+  background-color: rgba(24, 25, 28, 0.95);
+}
+
+div#other-subnets div {
+  margin: 0 auto 15px auto;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+}
+
+div#other-subnets span {
+  display: inline-block;
+  margin: 4px 8px;
 }

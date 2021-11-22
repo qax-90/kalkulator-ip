@@ -130,6 +130,7 @@ export default class App extends Component {
               hostMaxAddressBinary={this.state.hostMaxAddress.binary} />
               <h4 className="mb-3 text-primary">Podział sieci na podsieci</h4>
               <Subnetting
+              networkAddressDecimal={this.state.networkAddress.decimal}
               ipAddressBinary={this.state.ipAddress.binary}
               networkMaskNumber={this.state.networkMask.number} />
             </div>
